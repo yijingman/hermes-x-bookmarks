@@ -54,9 +54,11 @@ def note_for(store: Store, message: Any, now: _dt.datetime | None = None) -> str
     now = now or _dt.datetime.now(_dt.UTC)
     if not last or not _recent(last["created_at"], now) or not 1 <= n <= len(last["item_ids"]):
         return ""
-    from .actions import _line
-
-    item = _line(store, last["item_ids"][n - 1])
+    # Stored post content is untrusted; only a validated ID belongs in instructions.
+    item_id = last["item_ids"][n - 1]
+    if not isinstance(item_id, str) or re.fullmatch(r"[0-9]+", item_id) is None:
+        return ""
+    item = f"post ID {item_id}"
     if verb == "task":
         how = (f"Call the xbm_task tool with action \"add\" and item \"{n}\""
                + (" and the rest of the message as note" if m.group(3) else "") + ".")

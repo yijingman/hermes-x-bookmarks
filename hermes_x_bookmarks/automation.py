@@ -102,8 +102,9 @@ def unschedule(store: Store, dispatch: Dispatch | None) -> list[str]:
     if dispatch is None:
         return ["Removing the job needs Hermes: send /xbm unschedule in a Hermes chat."]
     answer = _cron(dispatch, {"action": "remove", "job_id": job_id})
-    store.set_meta(JOB_META, "")
-    if answer.get("success"):
+    if answer.get("success") is True and not answer.get("error"):
+        store.set_meta(JOB_META, "")
         return ["Weekly digest stopped (the Hermes cron job is removed)."]
-    return [f"The job was already gone in Hermes ({str(answer.get('error'))[:200]}). "
-            "Nothing is scheduled now."]
+    return [f"Hermes could not confirm removal: {str(answer.get('error') or answer)[:300]}",
+            "The job ID is retained; the digest may still run. Retry /xbm unschedule "
+            "or check Hermes' cron tools."]

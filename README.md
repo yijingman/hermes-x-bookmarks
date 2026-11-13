@@ -19,6 +19,37 @@ Uses the official X API only: no scraping, no browser automation, read-only acce
 
 ![Exports to Obsidian, Notion, Google Docs and the Desktop (demo data)](docs/media/exports.png)
 
+## Fork hardening and a limited trial
+
+This fork (`yijingman/hermes-x-bookmarks`, based on `winchxyz/hermes-x-bookmarks`) makes two
+narrow changes:
+
+- Digest reply hooks identify posts using validated ASCII numeric post IDs, not untrusted
+  article titles, summaries, post text or URLs. Tool arguments still use the digest item number.
+- Unscheduling retains the job ID and reports uncertainty on errors or unconfirmed removal.
+  Only an explicit successful removal clears it; a free-text "not found" error does not.
+
+For an initial trial, use the capped **CLI** command instead of an uncapped chat sync:
+
+```bash
+hermes xbm sync --max-pages 1
+hermes xbm status
+```
+
+No schedule is created automatically by default. Leave `/xbm schedule` and automation
+blueprints unused during the trial. The page cap limits bookmark pagination, **not total
+requests or cost**: identity lookup and missing-article enrichment may make additional calls.
+Set spending limits with both X and your model provider before any live trial; local cost
+estimates are not budget enforcement. Review the stored sample before classification or export.
+
+Remaining concerns are unchanged: full threads are not fetched; deletions on X are not
+reconciled locally; article enrichment depends on API availability and can cost extra.
+Obsidian export writes into a vault and preserves existing note bodies, so later enrichment
+may not appear in those bodies. Trial exports in a separate backed-up vault and review
+untrusted Markdown, links and embeds before using your primary vault. These fixes do not
+make all model processing or generated skills immune to prompt injection; review drafts
+before saving.
+
 ## What it does
 
 - **Sync.** Reads every bookmark the X API returns, newest first. The full text of X Articles
@@ -89,7 +120,7 @@ regenerate the tokens on X.
 ### 3. Install
 
 ```bash
-hermes plugins install winchxyz/hermes-x-bookmarks --enable
+hermes plugins install yijingman/hermes-x-bookmarks --enable
 hermes xbm whoami
 ```
 
